@@ -2,7 +2,7 @@ import pandas as pd
 from typing import List
 import numpy as np
 
-class Scrub:
+class Scrubber:
     def __init__(self, df: pd.DataFrame):
         self.df = df
     
@@ -18,7 +18,7 @@ class Scrub:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrub._convert_to_binary)
+            self.df[var] = self.df[var].map(Scrubber._convert_to_binary)
     
     
     def remove_7_and_9(self, vars: str or List[str]):
@@ -30,7 +30,7 @@ class Scrub:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrub._remove_7_and_9)
+            self.df[var] = self.df[var].map(Scrubber._remove_7_and_9)
     
     def remove_77_and_99(self, vars: str or List[str]):
         """Removes 77 and 99 and replaces with NaN.
@@ -41,7 +41,7 @@ class Scrub:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrub._remove_77_and_99)
+            self.df[var] = self.df[var].map(Scrubber._remove_77_and_99)
     
     def remove_777_and_999(self, vars: str or List[str]):
         """Removes 777 and 999 and replaces with NaN.
@@ -52,7 +52,7 @@ class Scrub:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrub._remove_777_and_999)
+            self.df[var] = self.df[var].map(Scrubber._remove_777_and_999)
     
     def minus_one(self, vars: str or List[str]):
         """Subtracts 1 from variable. Useful for RIAGENDR, since 1(Male), 2(Female) will become 0(Male), 1(Female).
@@ -63,7 +63,7 @@ class Scrub:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrub._minus_one)
+            self.df[var] = self.df[var].map(Scrubber._minus_one)
     
     def _convert_to_binary(x):
         if x == 7 or x == 9:
