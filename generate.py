@@ -1,4 +1,3 @@
-from pickle import FALSE
 from typing import List
 import pandas as pd
 import wget
