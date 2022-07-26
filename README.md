@@ -2,7 +2,7 @@ Useful package to help download and merge data from NHANES medical database.
 
 Example:
 
-```
+```python
 from nhutils.generate import create_dataset
 
 years_of_interst = ['2011-2012', '2013-2014', '2015-2016', '2017-2018']
