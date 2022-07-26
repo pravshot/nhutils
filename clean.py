@@ -18,7 +18,7 @@ class Scrubber:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrubber._convert_to_binary)
+            self.df[var] = self.df[var].map(Scrubber.__convert_to_binary)
     
     
     def remove_7_and_9(self, vars: str or List[str]):
@@ -30,7 +30,7 @@ class Scrubber:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrubber._remove_7_and_9)
+            self.df[var] = self.df[var].map(Scrubber.__remove_7_and_9)
     
     def remove_77_and_99(self, vars: str or List[str]):
         """Removes 77 and 99 and replaces with NaN.
@@ -41,7 +41,7 @@ class Scrubber:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrubber._remove_77_and_99)
+            self.df[var] = self.df[var].map(Scrubber.__remove_77_and_99)
     
     def remove_777_and_999(self, vars: str or List[str]):
         """Removes 777 and 999 and replaces with NaN.
@@ -52,7 +52,7 @@ class Scrubber:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrubber._remove_777_and_999)
+            self.df[var] = self.df[var].map(Scrubber.__remove_777_and_999)
     
     def minus_one(self, vars: str or List[str]):
         """Subtracts 1 from variable. Useful for RIAGENDR, since 1(Male), 2(Female) will become 0(Male), 1(Female).
@@ -63,9 +63,9 @@ class Scrubber:
         if isinstance(vars, str):
             vars = [vars]
         for var in vars:
-            self.df[var] = self.df[var].map(Scrubber._minus_one)
+            self.df[var] = self.df[var].map(Scrubber.__minus_one)
     
-    def _convert_to_binary(x):
+    def __convert_to_binary(x):
         if x == 7 or x == 9:
             return np.nan
         elif x == 2:
@@ -73,22 +73,22 @@ class Scrubber:
         else: 
             return x
     
-    def _minus_one(x):
+    def __minus_one(x):
         return x - 1
     
-    def _remove_7_and_9(x):
+    def __remove_7_and_9(x):
         if x == 7 or x == 9:
             return np.nan
         else:
             return x
     
-    def _remove_77_and_99(x):
+    def __remove_77_and_99(x):
         if x == 77 or x == 99:
             return np.nan
         else:
             return x
     
-    def _remove_777_and_999(x):
+    def __remove_777_and_999(x):
         if x == 777 or x == 999:
             return np.nan
         else:
