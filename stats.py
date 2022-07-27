@@ -49,7 +49,7 @@ def log_reg(
     print(model_odds)
 
     if output_excel_filename:
-        model_odds.to_excel(output_excel_filename, index=False)
+        model_odds.to_excel(output_excel_filename, index=True)
 
     return model_odds
 
