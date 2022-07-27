@@ -42,7 +42,7 @@ df_stats = compare_stats(group1=dr,
                          welchs_t_test=True,
                          decimal_places=4)
 ```
-"DRvsDiabetes.xlsx" looks something like this:
+After running above code block, "DRvsDiabetes.xlsx" would look like this:
 | variable       | DR                  | Diabetes           | p-value |
 | -------------- | ------------------- | ------------------ | ------- |
 | RIDAGEYR       | 62.9549 (12.424)    | 61.2482 (13.9428)  | 0.0022  |
