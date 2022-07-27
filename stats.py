@@ -73,7 +73,7 @@ def _compare_on_num_var(
     decimal_places: int,
 ):
     group1_basic_stats = f"{round(group1[var].mean(), decimal_places)} ({round(group1[var].std(), decimal_places)})"
-    group2_basic_stats = f"{round(group2[var].mean())} ({round(group2[var].std())})"
+    group2_basic_stats = f"{round(group2[var].mean(), decimal_places)} ({round(group2[var].std(), decimal_places)})"
 
     t, p = ttest_ind(
         group1[var].dropna(), group2[var].dropna(), equal_var=not welchs_t_test
