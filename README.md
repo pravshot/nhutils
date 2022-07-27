@@ -1,4 +1,4 @@
-Useful package to help download and merge data from NHANES medical database. Can clean/filter data and do statistical comparison analysis. 
+Useful package to help download and merge data from NHANES medical database. Can clean/filter data, do statistical comparison analysis, and perform multivariate logistic regression.
 
 Example downloading and cleaning data:
 
@@ -23,16 +23,16 @@ df.to_csv('dataset.csv', index=False)
 Example of comparison anaylsis:
 
 ```python
-from nhutils.stats import compare_stats
 import pandas as pd
+from nhutils.stats import compare_stats
 
 # import data
-data = pd.read_excel('final_with_new copy.xlsx')
+data = pd.read_excel('dataset.xlsx')
 # define groups to be compared
 dr = data[data['DIQ080'] == 1]
 diab = data[(data['DIQ010'] == 1) & (data['DIQ080'] == 0)]
 # call compare_stats function and provide function parameters
-df_stats = compare_stats(group1=dr, 
+results = compare_stats(group1=dr, 
                          group1_label='DR', 
                          group2=diab, 
                          group2_label='Diabetes',
@@ -42,7 +42,7 @@ df_stats = compare_stats(group1=dr,
                          welchs_t_test=True,
                          decimal_places=4)
 ```
-After running above code block, "DRvsDiabetes.xlsx" would look like this:
+After running above code block, ```results``` would look like this:
 | variable       | DR                  | Diabetes           | p-value |
 | -------------- | ------------------- | ------------------ | ------- |
 | RIDAGEYR       | 62.9549 (12.424)    | 61.2482 (13.9428)  | 0.0022  |
@@ -63,3 +63,38 @@ After running above code block, "DRvsDiabetes.xlsx" would look like this:
 | DMDEDUC2 = 3.0 | 23.7952             | 22.4949            |         |
 | DMDEDUC2 = 4.0 | 26.3554             | 28.3436            |         |
 | DMDEDUC2 = 5.0 | 14.6084             | 18.3231            |         |
+
+
+Example of multivariate logistic regression:
+
+```python
+import pandas as pd
+from nhutils.stats import log_reg
+
+# import data
+df = pd.read_excel('final_with_new copy.xlsx')
+# define group to do logistic regression on
+diabetes = df[df['DIQ010'] == 1]
+# call log_reg function and provide function parameters
+results = log_reg(data=diabetes,
+                  dependent_var='depression',
+                  independent_numerical_vars=['RIDAGEYR', 'BMXBMI'],
+                  independent_categorical_vars=['DIQ080', 'RIAGENDR', 'RIDRETH1', 'DMDEDUC2'],
+                  output_excel_filename='log_reg_results.xlsx')
+```
+After running above code block, ```results``` would look like this:
+|              | OR       | p-value  | 2.5%     | 97.5%    |
+| ------------ | -------- | -------- | -------- | -------- |
+| const        | 0.072711 | 4.85E-10 | 0.03185  | 0.165991 |
+| RIDAGEYR     | 0.990237 | 0.027291 | 0.981649 | 0.998901 |
+| BMXBMI       | 1.043185 | 8.88E-10 | 1.029174 | 1.057386 |
+| DIQ080=1.0   | 1.414383 | 0.007342 | 1.097718 | 1.822398 |
+| RIAGENDR=1   | 1.738442 | 1.11E-06 | 1.391635 | 2.171678 |
+| RIDRETH1=2   | 1.748111 | 0.005543 | 1.178047 | 2.594034 |
+| RIDRETH1=3   | 1.606838 | 0.008162 | 1.130741 | 2.283394 |
+| RIDRETH1=4   | 1.020704 | 0.912587 | 0.707948 | 1.471628 |
+| RIDRETH1=5   | 1.090866 | 0.707666 | 0.692392 | 1.718663 |
+| DMDEDUC2=2.0 | 0.947286 | 0.76531  | 0.663837 | 1.351762 |
+| DMDEDUC2=3.0 | 0.522351 | 0.000372 | 0.365311 | 0.746899 |
+| DMDEDUC2=4.0 | 0.518183 | 0.000192 | 0.366803 | 0.732039 |
+| DMDEDUC2=5.0 | 0.276303 | 3.57E-08 | 0.174871 | 0.436569 |
