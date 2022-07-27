@@ -2,6 +2,56 @@ from typing import Any, List
 import pandas as pd
 import numpy as np
 from scipy.stats import chi2_contingency, ttest_ind
+import statsmodels.api as sm
+
+
+def log_reg(
+    data: pd.DataFrame,
+    dependent_var: str,
+    independent_numerical_vars: List[str],
+    independent_categorical_vars: List[str],
+    output_excel_filename: str = None,
+) -> pd.DataFrame:
+    """Perform logistic regression anaylsis on data. Will print out results and return
+    pandas dataframe containing odds ratio, p-value, and conf-int.
+
+    Args:
+        data (pd.DataFrame): data that logistic regression model will be applied on
+        dependent_var (str): outcome/dependent variable(values should be 0 or 1)
+        independent_numerical_vars (List[str]): all independent variables that are numerical
+        independent_categorical_vars (List[str]): all independent variables that are categorical
+        output_excel_filename (str, optional): Defaults to None.
+            if given, will create an excel file holding stats results
+
+    Returns:
+        pd.DataFrame: holds the results of the logistic regression analysis
+    """
+    # subset data to only include variables of interest and do listwise deletion
+    x_vars = independent_numerical_vars + independent_categorical_vars
+    subset = data[x_vars + [dependent_var]]
+    subset.dropna(inplace=True)
+    # create x and y variables
+    x = pd.get_dummies(
+        subset[x_vars],
+        columns=independent_categorical_vars,
+        drop_first=True,
+        prefix_sep="=",
+    )
+    x_full = sm.add_constant(x, has_constant="skip")
+    y = subset[dependent_var]
+    # perform logistic regression
+    logit = sm.Logit(y, x_full)
+    result = logit.fit()
+    print(result.summary())
+    model_odds = pd.DataFrame(np.exp(result.params), columns=["OR"])
+    model_odds["p-value"] = result.pvalues
+    model_odds[["2.5%", "97.5%"]] = np.exp(result.conf_int())
+    print(model_odds)
+
+    if output_excel_filename:
+        model_odds.to_excel(output_excel_filename, index=False)
+
+    return model_odds
 
 
 def compare_stats(
@@ -11,7 +61,7 @@ def compare_stats(
     group2_label: str,
     numerical_vars: List[str],
     categorical_vars: List[str],
-    output_excel_filename: str,
+    output_excel_filename: str = None,
     welchs_t_test: bool = True,
     decimal_places: int = 3,
 ) -> pd.DataFrame:
@@ -32,8 +82,8 @@ def compare_stats(
             list of all the numerical variables to be included in the comparison. e.g. ['RIDAGEYR', 'BMXBMI']
         categorical_vars (List[str]):
             list of all the categorical variables to be included in the comparison. e.g. ['RIDRETH1', 'DMDEDUC2']
-        output_excel_filename (str):
-            The name of the output excel file that stores the statistics. e.g. "DRvsDiabetes.xlsx"
+        output_excel_filename (str, optional): Defaults to None.
+            if given, will create excel file that stores the statistics. e.g. "DRvsDiabetes.xlsx"
         welchs_t_test(bool): Default is True.
             If True, welch's t-test will be used. If False, regular student t-test will be used.
         decimal_places (int): Default is 3.
@@ -60,7 +110,9 @@ def compare_stats(
             group1, group2, cat_var, choices, storage, decimal_places
         )
 
-    storage.to_excel(output_excel_filename, index=False)
+    if output_excel_filename:
+        storage.to_excel(output_excel_filename, index=False)
+
     return storage
 
 
