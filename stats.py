@@ -13,6 +13,7 @@ def compare_stats(
     categorical_vars: List[str],
     output_excel_filename: str,
     welchs_t_test: bool = True,
+    decimal_places: int = 3,
 ) -> pd.DataFrame:
     """Compare statistics between two groups. Will result in a table including mean(std) or mean percentage
     for each group and p-value from t-test or chi-square test depending on if the variable
@@ -30,11 +31,13 @@ def compare_stats(
         numerical_vars (List[str]):
             list of all the numerical variables to be included in the comparison. e.g. ['RIDAGEYR', 'BMXBMI']
         categorical_vars (List[str]):
-            list of all the categorical variables to be included in the comparison. e.g. ['RIDETH1', 'DMDEDUC2']
+            list of all the categorical variables to be included in the comparison. e.g. ['RIDRETH1', 'DMDEDUC2']
         output_excel_filename (str):
             The name of the output excel file that stores the statistics. e.g. "DRvsDiabetes.xlsx"
         welchs_t_test(bool): Default is True.
             If True, welch's t-test will be used. If False, regular student t-test will be used.
+        decimal_places (int): Default is 3.
+            The number of decimal places to round the results to.
 
     Returns:
         pd.DataFrame: the dataframe containing the statistics.
@@ -43,7 +46,7 @@ def compare_stats(
     storage = pd.DataFrame(columns=["variable", group1_label, group2_label, "p-value"])
 
     for num_var in numerical_vars:
-        _compare_on_num_var(group1, group2, num_var, storage, welchs_t_test)
+        _compare_on_num_var(group1, group2, num_var, storage, welchs_t_test, decimal_places)
 
     for cat_var in categorical_vars:
         choices = set(group1[cat_var].dropna().unique()) | set(
@@ -51,7 +54,7 @@ def compare_stats(
         )
         choices = list(choices)
         choices.sort()
-        _compare_on_categorical_var(group1, group2, cat_var, choices, storage)
+        _compare_on_categorical_var(group1, group2, cat_var, choices, storage, decimal_places)
 
     storage.to_excel(output_excel_filename, index=False)
     return storage
@@ -62,16 +65,17 @@ def _compare_on_num_var(
     group2: pd.DataFrame,
     var: str,
     storage: pd.DataFrame,
-    welchs_t_test: bool = True,
+    welchs_t_test: bool,
+    decimal_places: int
 ):
-    group1_basic_stats = f"{group1[var].mean()} ({group1[var].std()})"
-    group2_basic_stats = f"{group2[var].mean()} ({group2[var].std()})"
+    group1_basic_stats = f"{round(group1[var].mean(), decimal_places)} ({round(group1[var].std(), decimal_places)})"
+    group2_basic_stats = f"{round(group2[var].mean())} ({round(group2[var].std())})"
 
     t, p = ttest_ind(
         group1[var].dropna(), group2[var].dropna(), equal_var=not welchs_t_test
     )
 
-    storage.loc[len(storage.index)] = [var, group1_basic_stats, group2_basic_stats, p]
+    storage.loc[len(storage.index)] = [var, group1_basic_stats, group2_basic_stats, round(p, decimal_places)]
 
 
 def _compare_on_categorical_var(
@@ -80,6 +84,7 @@ def _compare_on_categorical_var(
     var: str,
     choices: List[Any],
     storage: pd.DataFrame,
+    decimal_places: int
 ):
     group1_vals = group1[var].value_counts()
     group2_vals = group2[var].value_counts()
@@ -92,7 +97,7 @@ def _compare_on_categorical_var(
         index += 1
 
     chi2, p, dof, ex = chi2_contingency(obs)
-    storage.loc[len(storage.index)] = [var, None, None, p]
+    storage.loc[len(storage.index)] = [var, None, None, round(p, decimal_places)]
 
     for choice in choices:
         name = var + " = " + str(choice)
@@ -100,7 +105,7 @@ def _compare_on_categorical_var(
         group2_mean_percentage = (group2_vals[choice] / group2_vals.sum()) * 100
         storage.loc[len(storage.index)] = [
             name,
-            group1_mean_percentage,
-            group2_mean_percentage,
-            None,
+            round(group1_mean_percentage, decimal_places),
+            round(group2_mean_percentage, decimal_places),
+            None
         ]
