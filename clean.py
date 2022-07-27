@@ -9,6 +9,18 @@ class Scrubber:
     def get_data(self):
         return self.df
     
+    def custom(self, vars: str or List[str], func: callable):
+        """Apply custom function to variables.
+
+        Args:
+            var (str or List[str]): the variable or list of variables that will be changed.
+            func (callable): the function to apply to the variable.
+        """
+        if isinstance(vars, str):
+            vars = [vars]
+        for var in vars:
+            self.df[var] = self.df[var].map(func)
+    
     def convert_to_binary(self, vars: str or List[str]):
         """Useful for yes/no questions. Removes 7 and 9 and replaces 1(yes), 2(no) with 1(yes), 0(no).
 
