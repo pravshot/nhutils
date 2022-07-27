@@ -46,7 +46,9 @@ def compare_stats(
     storage = pd.DataFrame(columns=["variable", group1_label, group2_label, "p-value"])
 
     for num_var in numerical_vars:
-        _compare_on_num_var(group1, group2, num_var, storage, welchs_t_test, decimal_places)
+        _compare_on_num_var(
+            group1, group2, num_var, storage, welchs_t_test, decimal_places
+        )
 
     for cat_var in categorical_vars:
         choices = set(group1[cat_var].dropna().unique()) | set(
@@ -54,7 +56,9 @@ def compare_stats(
         )
         choices = list(choices)
         choices.sort()
-        _compare_on_categorical_var(group1, group2, cat_var, choices, storage, decimal_places)
+        _compare_on_categorical_var(
+            group1, group2, cat_var, choices, storage, decimal_places
+        )
 
     storage.to_excel(output_excel_filename, index=False)
     return storage
@@ -66,7 +70,7 @@ def _compare_on_num_var(
     var: str,
     storage: pd.DataFrame,
     welchs_t_test: bool,
-    decimal_places: int
+    decimal_places: int,
 ):
     group1_basic_stats = f"{round(group1[var].mean(), decimal_places)} ({round(group1[var].std(), decimal_places)})"
     group2_basic_stats = f"{round(group2[var].mean())} ({round(group2[var].std())})"
@@ -75,7 +79,12 @@ def _compare_on_num_var(
         group1[var].dropna(), group2[var].dropna(), equal_var=not welchs_t_test
     )
 
-    storage.loc[len(storage.index)] = [var, group1_basic_stats, group2_basic_stats, round(p, decimal_places)]
+    storage.loc[len(storage.index)] = [
+        var,
+        group1_basic_stats,
+        group2_basic_stats,
+        round(p, decimal_places),
+    ]
 
 
 def _compare_on_categorical_var(
@@ -84,7 +93,7 @@ def _compare_on_categorical_var(
     var: str,
     choices: List[Any],
     storage: pd.DataFrame,
-    decimal_places: int
+    decimal_places: int,
 ):
     group1_vals = group1[var].value_counts()
     group2_vals = group2[var].value_counts()
@@ -107,5 +116,5 @@ def _compare_on_categorical_var(
             name,
             round(group1_mean_percentage, decimal_places),
             round(group2_mean_percentage, decimal_places),
-            None
+            None,
         ]
