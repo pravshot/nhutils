@@ -8,7 +8,7 @@ from nhutils.constants import *
 
 # main driver function for generating dataset
 def create_dataset(
-    vars: List[str], years: List[str], by: str = "SEQN", join_method: str = "outer"
+    vars: List[str], years: List[str], by: str = "SEQN", join_method: str = "outer", year_column: bool = True, output_excel_filename: str = None
 ) -> pd.DataFrame:
     """The main function to download data from Nhanes and merge together into single pandas dataframe.
     All you have to pass is the variable names and years.
@@ -24,6 +24,10 @@ def create_dataset(
             the variable that is used to do the merging of data. 
         join_method (str, optional): Defaults to "outer".
             the method used to merge data.
+        year_column (bool, optional): Defaults to True.
+            whether or not to include a column for the year.
+        output_excel_filename (str, optional): Defaults to None.
+            if given, will export returned dataset to excel file
 
     Returns:
         pd.DataFrame: the created dataset
@@ -42,13 +46,15 @@ def create_dataset(
         print("merging files...")
         year_dataset = None
         for file in files_to_download:
-            vars_in_file = _find_all_vars_in_file(file, vars, year) + ["SEQN"]
+            vars_in_file = list(set(_find_all_vars_in_file(file, vars, year) + ["SEQN"]))
             df = pd.read_csv(DOWNLOADED_DIR + file.replace(".XPT", ".csv"))
             df = df[vars_in_file]
             if file == files_to_download[0]:
                 year_dataset = df
             else:
                 year_dataset = year_dataset.merge(df, on=by, how=join_method, suffixes=(False, False))
+        if year_column:
+            year_dataset['year'] = year
         if year == years[0]:
             dataset = year_dataset
         else:
@@ -59,6 +65,10 @@ def create_dataset(
     # move SEQN to the front
     col = dataset.pop('SEQN')
     dataset.insert(0, col.name, col)
+    
+    if output_excel_filename:
+        dataset.to_excel(output_excel_filename, index=False)
+    
     return dataset
 
 
