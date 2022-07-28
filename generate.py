@@ -58,7 +58,7 @@ def create_dataset(
         if year == years[0]:
             dataset = year_dataset
         else:
-            dataset = pd.concat([dataset, year_dataset], axis=0)
+            dataset = pd.concat([dataset, year_dataset], ignore_index=True)
         print("done")
     end = time()
     print(f"finished creating dataset in {end - start} seconds")
