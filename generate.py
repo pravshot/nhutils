@@ -133,7 +133,7 @@ def _find_all_vars_in_file(file: str, vars: List[str], year: str) -> List[str]:
     var_file_map = globals()['VAR_TO_FILENAME_' + year.replace('-', '_')]
     vars_in_file = []
     for var in vars: 
-        if var_file_map[var] == file:
+        if var in var_file_map and var_file_map[var] == file:
             vars_in_file.append(var)
     return vars_in_file
     
