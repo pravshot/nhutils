@@ -100,7 +100,7 @@ def _get_filenames_to_download(vars: List[str], year: str) -> List[str]:
     var_file_map = globals()['VAR_TO_FILENAME_' + year.replace('-', '_')]
     files_to_download = set()
     for var in vars:
-        if not var == "SEQN":
+        if not var == "SEQN" and var in var_file_map:
             files_to_download.add(var_file_map[var])
     print("done")
     return list(files_to_download)
