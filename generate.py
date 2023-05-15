@@ -8,7 +8,7 @@ from nhutils.constants import *
 
 # main driver function for generating dataset
 def create_dataset(
-    vars: List[str], years: List[str], by: str = "SEQN", join_method: str = "outer"
+    vars: List[str], years: List[str], by: str = "SEQN", join_method: str = "outer", year_column: bool = True, output_excel_filename: str = None
 ) -> pd.DataFrame:
     """The main function to download data from Nhanes and merge together into single pandas dataframe.
     All you have to pass is the variable names and years.
@@ -24,6 +24,10 @@ def create_dataset(
             the variable that is used to do the merging of data. 
         join_method (str, optional): Defaults to "outer".
             the method used to merge data.
+        year_column (bool, optional): Defaults to True.
+            whether or not to include a column for the year.
+        output_excel_filename (str, optional): Defaults to None.
+            if given, will export returned dataset to excel file
 
     Returns:
         pd.DataFrame: the created dataset
@@ -42,23 +46,29 @@ def create_dataset(
         print("merging files...")
         year_dataset = None
         for file in files_to_download:
-            vars_in_file = _find_all_vars_in_file(file, vars, year) + ["SEQN"]
+            vars_in_file = list(set(_find_all_vars_in_file(file, vars, year) + ["SEQN"]))
             df = pd.read_csv(DOWNLOADED_DIR + file.replace(".XPT", ".csv"))
             df = df[vars_in_file]
             if file == files_to_download[0]:
                 year_dataset = df
             else:
                 year_dataset = year_dataset.merge(df, on=by, how=join_method, suffixes=(False, False))
+        if year_column:
+            year_dataset['year'] = year
         if year == years[0]:
             dataset = year_dataset
         else:
-            dataset = pd.concat([dataset, year_dataset], axis=0)
+            dataset = pd.concat([dataset, year_dataset], ignore_index=True)
         print("done")
     end = time()
     print(f"finished creating dataset in {end - start} seconds")
     # move SEQN to the front
     col = dataset.pop('SEQN')
     dataset.insert(0, col.name, col)
+    
+    if output_excel_filename:
+        dataset.to_excel(output_excel_filename, index=False)
+    
     return dataset
 
 
@@ -90,7 +100,7 @@ def _get_filenames_to_download(vars: List[str], year: str) -> List[str]:
     var_file_map = globals()['VAR_TO_FILENAME_' + year.replace('-', '_')]
     files_to_download = set()
     for var in vars:
-        if not var == "SEQN":
+        if not var == "SEQN" and var in var_file_map:
             files_to_download.add(var_file_map[var])
     print("done")
     return list(files_to_download)
@@ -123,7 +133,7 @@ def _find_all_vars_in_file(file: str, vars: List[str], year: str) -> List[str]:
     var_file_map = globals()['VAR_TO_FILENAME_' + year.replace('-', '_')]
     vars_in_file = []
     for var in vars: 
-        if var_file_map[var] == file:
+        if var in var_file_map and var_file_map[var] == file:
             vars_in_file.append(var)
     return vars_in_file
     

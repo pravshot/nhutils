@@ -72,7 +72,7 @@ import pandas as pd
 from nhutils.stats import log_reg
 
 # import data
-df = pd.read_excel('final_with_new copy.xlsx')
+df = pd.read_excel('dataset.xlsx')
 # define group to do logistic regression on
 diabetes = df[df['DIQ010'] == 1]
 # call log_reg function and provide function parameters
