@@ -162,8 +162,8 @@ def _compare_on_categorical_var(
 
     for choice in choices:
         name = var + " = " + str(choice)
-        group1_mean_percentage = (group1_vals[choice] / group1_vals.sum()) * 100
-        group2_mean_percentage = (group2_vals[choice] / group2_vals.sum()) * 100
+        group1_mean_percentage = ((group1_vals[choice] if choice in group1_vals.index else 0) / group1_vals.sum()) * 100
+        group2_mean_percentage = ((group2_vals[choice] if choice in group2_vals.index else 0) / group2_vals.sum()) * 100
         storage.loc[len(storage.index)] = [
             name,
             round(group1_mean_percentage, decimal_places),
